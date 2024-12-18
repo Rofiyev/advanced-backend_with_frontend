@@ -3,7 +3,7 @@ import { IPost } from "../interface";
 
 const postSchema = new Schema<IPost>(
   {
-    author: { type: Schema.ObjectId, ref: "User" },
+    author: { type: Schema.ObjectId, ref: "users" },
     title: { type: String, required: true, min: 10, trim: true },
     description: { type: String, required: true, min: 50, trim: true },
     picture: { type: String, required: true },
@@ -11,4 +11,4 @@ const postSchema = new Schema<IPost>(
   { timestamps: true }
 );
 
-export const PostModel = model("posts", postSchema);
+export const PostSchema = model("posts", postSchema);

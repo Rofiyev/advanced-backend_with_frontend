@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from "express";
-import { PostModel } from "../models/post.model";
+import { PostSchema } from "../models/post.model";
 
 export default async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const post = await PostModel.findById(req.params.id);
+    const post = await PostSchema.findById(req.params.id);
     const authorId = req.user.id;
 
     if (post.author !== authorId)

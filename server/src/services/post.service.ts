@@ -1,21 +1,21 @@
 import { ObjectId } from "mongoose";
 import { UploadedFile } from "express-fileupload";
 import { IPost } from "../interface";
-import { PostModel } from "../models/post.model";
+import { PostSchema } from "../models/post.model";
 import fileService from "./file.service";
 
 class PostService {
   async getAllPosts() {
-    return await PostModel.find();
+    return await PostSchema.find().populate("author");
   }
 
   async getOnePost(id: string) {
-    return await PostModel.findById(id);
+    return await PostSchema.findById(id);
   }
 
   async createPost(post: IPost, picture: UploadedFile, author: ObjectId) {
     const pictureData = fileService.save(picture);
-    return await PostModel.create({
+    return await PostSchema.create({
       ...post,
       picture: pictureData,
       author,
@@ -25,7 +25,7 @@ class PostService {
   async editPost(id: string, data: IPost) {
     const pictureData = fileService.save(data.picture);
 
-    const updatedPost = await PostModel.findByIdAndUpdate(
+    const updatedPost = await PostSchema.findByIdAndUpdate(
       id,
       { $set: { ...data, picture: pictureData } },
       { new: true }
@@ -37,7 +37,7 @@ class PostService {
   }
 
   async deletePost(id: string) {
-    return await PostModel.findByIdAndDelete(id);
+    return await PostSchema.findByIdAndDelete(id);
   }
 }
 
