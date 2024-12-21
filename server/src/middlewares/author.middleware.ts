@@ -6,8 +6,12 @@ export default async (req: Request, res: Response, next: NextFunction) => {
     const post = await PostSchema.findById(req.params.id);
     const authorId = req.user.id;
 
-    if (post.author !== authorId)
-      res.status(400).json({ message: "Only author can edit this post!" });
+    if (post.author.toString() !== authorId) {
+      res
+        .status(400)
+        .json({ message: "Only the author can manage this post!" });
+      return;
+    }
 
     next();
   } catch (error) {

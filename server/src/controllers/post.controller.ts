@@ -18,7 +18,7 @@ class PostController {
   async getOnePost(req: Request, res: Response) {
     try {
       const post = await postService.getOnePost(req.params.id);
-      res.status(200).json({ message: "OK", post });
+      res.status(200).json(post);
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Internal server error";
@@ -36,7 +36,7 @@ class PostController {
           picture,
           req.user.id
         );
-        res.status(201).json({ message: "Created post successfully!", post });
+        res.status(201).json(post);
       }
     } catch (error) {
       const errorMessage =
@@ -57,9 +57,7 @@ class PostController {
           ...updates,
           picture,
         });
-        res
-          .status(201)
-          .json({ message: "Updated post successfully!", post: updatedPost });
+        res.status(201).json(updatedPost);
       }
     } catch (error) {
       const errorMessage =
@@ -70,10 +68,10 @@ class PostController {
   }
 
   async deletePost(req: Request, res: Response) {
-    const { id } = req.params;
     try {
+      const { id } = req.params;
       const post = await postService.deletePost(id);
-      res.status(200).json({ message: "Deleted post successfully!", post });
+      res.status(200).json(post);
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Internal server error";

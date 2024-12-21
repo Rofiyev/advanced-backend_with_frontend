@@ -9,12 +9,19 @@ import cookieParser from "cookie-parser";
 
 dotenv.config();
 
+const corsOptions = {
+  origin: process.env.CLIENT_URL,
+  credentials: true,
+  optionsSuccessStatus: 200,
+};
+
 const app: Express = express();
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(fileUpload());
-app.use(cors());
 app.use(express.static("src/static"));
 
 app.use("/api/posts", postRouter);

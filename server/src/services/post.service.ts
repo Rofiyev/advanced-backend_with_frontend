@@ -3,14 +3,17 @@ import { UploadedFile } from "express-fileupload";
 import { IPost } from "../interface";
 import { PostSchema } from "../models/post.model";
 import fileService from "./file.service";
+import PostDto from "../dtos/post.dto";
 
 class PostService {
   async getAllPosts() {
-    return await PostSchema.find().populate("author");
+    const posts = await PostSchema.find().populate("author");
+    const postsDto = posts.map((post) => new PostDto(post));
+    return postsDto;
   }
 
   async getOnePost(id: string) {
-    return await PostSchema.findById(id);
+    return await PostSchema.findById(id).populate("author");
   }
 
   async createPost(post: IPost, picture: UploadedFile, author: ObjectId) {
@@ -37,7 +40,11 @@ class PostService {
   }
 
   async deletePost(id: string) {
-    return await PostSchema.findByIdAndDelete(id);
+    const post = await PostSchema.findByIdAndDelete(id);
+
+    if (!post) throw new Error("Post not found");
+
+    return post;
   }
 }
 
