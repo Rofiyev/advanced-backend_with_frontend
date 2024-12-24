@@ -1,69 +1,52 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import formSchema from "@/schemas/form-schema";
-import { Code2Icon, Loader2, SendIcon } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
-import { FormProvider, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Link, useNavigate } from "react-router";
-import { z } from "zod";
 import {
   FormControl,
   FormField,
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import { useMutation } from "react-query";
+import { Input } from "@/components/ui/input";
+import { passwordSchema } from "@/schemas/form-schema";
 import axiosInstance from "@/service/axios";
-import { IUserPostAction } from "@/interface";
-import { AxiosError } from "axios";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Code2Icon, Loader2, SendIcon } from "lucide-react";
+import { FormProvider, useForm } from "react-hook-form";
+import { useMutation } from "react-query";
+import { Link, useNavigate, useParams } from "react-router";
 import { toast } from "react-toastify";
-import { useCurrentUser } from "@/context/app-context";
+import { z } from "zod";
 
-type ActionType = "sign-in" | "sign-up";
-
-const SignInPage = () => {
+const RecoveryAccountPage = () => {
+  const { token } = useParams();
   const navigate = useNavigate();
-  const { setUser } = useCurrentUser();
-  const [actionType, setActionType] = useState<ActionType>("sign-in");
 
-  const handleActionType = useCallback(
-    (action: ActionType) => setActionType(action),
-    []
-  );
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof passwordSchema>>({
+    resolver: zodResolver(passwordSchema),
     defaultValues: {
-      email: "",
       password: "",
+      confirmPassword: "",
     },
   });
 
-  const apiPath = useMemo(
-    () => (actionType === "sign-in" ? `/api/auth/login` : `/api/auth/create`),
-    [actionType]
-  );
   const { mutate, isLoading } = useMutation({
-    mutationKey: ["create", "login"],
-    mutationFn: (data: IUserPostAction) =>
-      axiosInstance.post(apiPath, data).then((res) => res.data),
-    onSuccess: (data) => {
-      setUser(data);
-      toast.success("Sign in successfully");
-      localStorage.setItem("accessToken", data.accessToken);
-      navigate("/");
+    mutationKey: ["forgot-password"],
+    mutationFn: (data: { password: string; confirmPassword: string }) =>
+      axiosInstance
+        .put("/api/auth/recovery-account", {
+          token: token,
+          password: data.confirmPassword,
+        })
+        .then((res) => res.data),
+    onSuccess: () => {
+      toast.success("Your account password has been successfully changed!");
+      navigate("/auth");
     },
-    onError: (error: AxiosError) => {
-      if (error.response) {
-        // @ts-ignore
-        const error_msg: { message: string } = error.response.data;
-        toast.error(error_msg.message);
-      }
+    onError: () => {
+      toast.error("Something went wrong!");
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => mutate(values);
+  const onSubmit = (values: z.infer<typeof passwordSchema>) => mutate(values);
 
   return (
     <div className="min-h-screen flex justify-center">
@@ -83,29 +66,10 @@ const SignInPage = () => {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               <div className="mt-12 flex flex-col items-center">
                 <h1 className="text-2xl xl:text-3xl font-extrabold">
-                  {actionType === "sign-in" ? "Sign In" : "Sign Up"}
+                  Recovery account
                 </h1>
                 <div className="w-full flex-1">
                   <div className="mx-auto max-w-md">
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <Input
-                              disabled={isLoading}
-                              type="email"
-                              placeholder="Email"
-                              className="mt-5 py-5"
-                              autoComplete="off"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage className="text-rose-500" />
-                        </FormItem>
-                      )}
-                    />
                     <FormField
                       control={form.control}
                       name="password"
@@ -117,6 +81,7 @@ const SignInPage = () => {
                               type="password"
                               placeholder="Password"
                               className="mt-5 py-5"
+                              autoComplete="off"
                               {...field}
                             />
                           </FormControl>
@@ -124,11 +89,30 @@ const SignInPage = () => {
                         </FormItem>
                       )}
                     />
+                    <FormField
+                      control={form.control}
+                      name="confirmPassword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input
+                              disabled={isLoading}
+                              type="password"
+                              placeholder="Confirm password"
+                              className="mt-5 py-5"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage className="text-rose-500" />
+                        </FormItem>
+                      )}
+                    />
+
                     <Button
                       disabled={isLoading}
                       type="submit"
                       variant="secondary"
-                      className="mt-5 w-full py-5"
+                      className="mt-3 w-full py-5"
                     >
                       {isLoading ? (
                         <Loader2 size={20} className="animate-spin" />
@@ -137,21 +121,6 @@ const SignInPage = () => {
                       )}
                       <span>Submit</span>
                     </Button>
-                    {actionType === "sign-up" ? (
-                      <p
-                        onClick={() => handleActionType("sign-in")}
-                        className="mt-6 text-xs text-gray-600 text-center hover:text-white transition-colors cursor-pointer"
-                      >
-                        Do you already have an account?
-                      </p>
-                    ) : (
-                      <p
-                        onClick={() => handleActionType("sign-up")}
-                        className="mt-6 text-xs text-gray-600 text-center hover:text-white transition-colors cursor-pointer"
-                      >
-                        Don't have an account?
-                      </p>
-                    )}
                   </div>
                 </div>
               </div>
@@ -172,4 +141,4 @@ const SignInPage = () => {
   );
 };
 
-export default SignInPage;
+export default RecoveryAccountPage;

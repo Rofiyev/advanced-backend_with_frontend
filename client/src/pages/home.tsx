@@ -4,6 +4,7 @@ import Footer from "@/components/shared/footer";
 import Navbar from "@/components/shared/navbar";
 import Sheet from "@/components/shared/sheet";
 import { IPost } from "@/interface";
+import { cn } from "@/lib/utils";
 import axiosInstance from "@/service/axios";
 import { useQuery } from "react-query";
 
@@ -51,16 +52,23 @@ const HomePage = () => {
         </div>
       </main>
       <div>
-        <div className="relative px-6 pt-16 pb-20 lg:px-8 lg:pt-24 lg:pb-28">
+        <div
+          className={cn(
+            "relative px-6 lg:px-8",
+            posts.length && "pt-16 pb-20 lg:pt-24 lg:pb-28"
+          )}
+        >
           <div className="relative mx-auto max-w-7xl">
-            <div className="text-center">
-              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                Posts
-              </h2>
-              <p className="mx-auto mt-3 max-w-2xl text-xl text-gray-300 sm:mt-4">
-                This is your life and it's ending one minute a time...
-              </p>
-            </div>
+            {posts.length > 0 && (
+              <div className="text-center">
+                <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                  Posts
+                </h2>
+                <p className="mx-auto mt-3 max-w-2xl text-xl text-gray-300 sm:mt-4">
+                  This is your life and it's ending one minute a time...
+                </p>
+              </div>
+            )}
             <div className="mx-auto mt-12 grid max-w-lg gap-5 lg:max-w-none lg:grid-cols-3">
               {isLoading ? (
                 <>

@@ -21,6 +21,7 @@ export interface IUser {
   id: string;
   accessToken: string;
   refreshToken: string;
+  isActivated: boolean;
 }
 
 export type IUseSheet = {

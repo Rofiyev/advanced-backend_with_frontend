@@ -2,11 +2,13 @@ import { Route, Routes } from "react-router";
 import {
   HomePage,
   NotFoundPage,
-  SignInPage,
+  AuthPage,
   PostDetailPage,
   ContactPage,
   AboutPage,
   PostsPage,
+  SuccessPage,
+  RecoveryAccountPage,
 } from "./pages";
 import { ThemeProvider } from "./components/shared/theme-provider";
 import { QueryClient, QueryClientProvider } from "react-query";
@@ -27,9 +29,12 @@ function App() {
             <Route path="/about" element={<AboutPage />} />
             <Route path="/posts" element={<PostsPage />} />
             <Route path="/contact" element={<ContactPage />} />
-            <Route path="auth">
-              <Route path="sign-in" element={<SignInPage />} />
-            </Route>
+            <Route path="/success/:userId" element={<SuccessPage />} />
+            <Route
+              path="/recovery-account/:token"
+              element={<RecoveryAccountPage />}
+            />
+            <Route path="auth" element={<AuthPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </ThemeProvider>

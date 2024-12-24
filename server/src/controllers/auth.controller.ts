@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { registerSchema } from "../validations";
+import { emailSchema, recoverySchema, registerSchema } from "../validations";
 import authService from "../services/user.service";
 
 class AuthController {
@@ -10,7 +10,7 @@ class AuthController {
         value: { email, password },
       } = registerSchema.validate(req.body);
 
-      if (error)
+      if (error) {
         res.status(400).json({
           message: "Validation error",
           details: error.details.map((err) => ({
@@ -18,7 +18,8 @@ class AuthController {
             message: err.message,
           })),
         });
-
+        return;
+      }
       const data = await authService.register(email, password);
       res.cookie("refreshToken", data.refreshToken, {
         httpOnly: true,
@@ -36,7 +37,19 @@ class AuthController {
     try {
       const { id: userId } = req.params;
       await authService.activation(userId);
-      res.redirect(`${process.env.CLIENT_URL}`);
+      res.redirect(`${process.env.CLIENT_URL}/success/${userId}`);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Internal server error";
+
+      res.status(500).json({ message: errorMessage });
+    }
+  }
+
+  async setActivation(req: Request, res: Response) {
+    try {
+      const { id: userId } = req.params;
+      await authService.activation(userId);
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Internal server error";
@@ -52,7 +65,7 @@ class AuthController {
         value: { email, password },
       } = registerSchema.validate(req.body);
 
-      if (error)
+      if (error) {
         res.status(400).json({
           message: "Validation error",
           details: error.details.map((err) => ({
@@ -60,7 +73,8 @@ class AuthController {
             message: err.message,
           })),
         });
-
+        return;
+      }
       const data = await authService.login(email, password);
       res.cookie("refreshToken", data.refreshToken, {
         httpOnly: true,
@@ -98,6 +112,61 @@ class AuthController {
         maxAge: 30 * 24 * 60 * 60 * 1000,
       });
       res.status(201).json(data);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Internal server error";
+
+      res.status(500).json({ message: errorMessage });
+    }
+  }
+  async forgotPassword(req: Request, res: Response) {
+    try {
+      const {
+        error,
+        value: { email },
+      } = emailSchema.validate(req.body);
+
+      if (error) {
+        res.status(400).json({
+          message: "Validation error",
+          details: error.details.map((err) => ({
+            field: err.path[0],
+            message: err.message,
+          })),
+        });
+        return;
+      }
+
+      await authService.forgotPassword(email);
+      res.status(200).json({ message: "Success" });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Internal server error";
+
+      res.status(500).json({ message: errorMessage });
+    }
+  }
+
+  async recoveryAccount(req: Request, res: Response) {
+    try {
+      const {
+        error,
+        value: { token, password },
+      } = recoverySchema.validate(req.body);
+
+      if (error) {
+        res.status(400).json({
+          message: "Validation error",
+          details: error.details.map((err) => ({
+            field: err.path[0],
+            message: err.message,
+          })),
+        });
+        return;
+      }
+
+      await authService.recoveryAccount(token, password);
+      res.status(200).json({ message: "Success" });
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Internal server error";

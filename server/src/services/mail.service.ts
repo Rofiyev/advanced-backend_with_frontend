@@ -20,7 +20,29 @@ class MailService {
     this.transporter = nodemailer.createTransport(nodemailerOptions);
   }
 
-  async sendMail(email: string, activationLink: string) {
+  async sendForgotPasswordMail(email: string, activationLink: string) {
+    try {
+      await this.transporter.sendMail({
+        from: `Dilshod Rofiyev ${process.env.SMTP_USER!}`,
+        to: email,
+        subject: `Forgot Password! This email can be used during 15 minutes!`,
+        html: `<div>
+                <br/>
+                <h1>Dilshod R. Advanced Backend course Forgot Password Link</h1>
+                <div>
+                  <p> Dear, <span class="">${email}</span></p>
+                <div>
+                  <p>Click the link below to change your account:</p>
+                  <a href="${activationLink}" class="activation__btn">Your account will be changed here.</a>
+                </div>
+              </div>`,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async sendActivationMail(email: string, activationLink: string) {
     try {
       await this.transporter.sendMail({
         from: `Dilshod Rofiyev ${process.env.SMTP_USER!}`,

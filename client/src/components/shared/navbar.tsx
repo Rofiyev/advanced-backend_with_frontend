@@ -59,7 +59,7 @@ const Navbar = () => {
             {user ? (
               <UserButton />
             ) : (
-              <Link to={{ pathname: "/auth/sign-in" }}>
+              <Link to={{ pathname: "/auth" }}>
                 <Button className="bg-sky-500 hover:bg-sky-600 transition-colors font-medium text-white">
                   Sign In <ArrowRight size={20} className="text-white" />
                 </Button>

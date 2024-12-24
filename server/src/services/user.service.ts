@@ -18,7 +18,7 @@ class AuthService {
     });
     const userDto = new UserDto(user);
 
-    await mailService.sendMail(
+    await mailService.sendActivationMail(
       email,
       `${process.env.API_URL}/api/auth/activation/${userDto.id}`
     );
@@ -74,6 +74,34 @@ class AuthService {
     await tokenService.saveToken(userDto.id, tokens.refreshToken);
 
     return { ...userDto, ...tokens };
+  }
+
+  async forgotPassword(email: string) {
+    const user = await UserSchema.findOne({ email });
+
+    if (!user) throw new Error("User with existing email not found!");
+
+    const userDto = new UserDto(user);
+
+    const tokens = tokenService.generateToken({ ...userDto });
+
+    await mailService.sendForgotPasswordMail(
+      email,
+      `${process.env.CLIENT_URL}/recovery-account/${tokens.accessToken}`
+    );
+  }
+
+  async recoveryAccount(token: string, password: string) {
+    const userData: any = tokenService.validateAccessToken(token);
+
+    if (!userData) throw new Error("User not found with token!");
+
+    const hashPassword = await bcrypt.hash(password, 10);
+    const user = await UserSchema.findByIdAndUpdate(userData.id, {
+      password: hashPassword,
+    });
+
+    return user;
   }
 }
 
